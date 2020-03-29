@@ -58,12 +58,33 @@ export class HeroService {
     );
   }
 
-  /**POST: add a new hero to the server */
+  /**POST: add a new hero to the server 
+   * this method differs from updateHero() in two ways:
+   * it calls httpClient.post() instead of put()
+   * it expects the server to generate an id for the new hero, which it returns in the Observable<Hero> 
+   * to the caller
+  */
   addHero (hero: Hero): Observable<Hero>{
     return this.http.post<Hero>(this.heroesUrl, hero, this.httpOptions).pipe(
       tap((newHero: Hero) => this.log(`added hero w/ id=${newHero.id}`)),
       catchError(this.handleError<Hero>('addHero'))
     );
+  }
+  /**DELETE: delete the hero from the server
+   * note the following key points:
+   * deleteHero() calls httpClient.delete()
+   * the URL is the heroes resource URL plus the id of the hero to delete
+   * you don't send data as you did with put() and post()
+   * you still send the httpOptions
+   */
+  deleteHero (hero: Hero | number): Observable<Hero> {
+    const id = typeof hero === 'number' ? hero: hero.id;
+    const url = `${this.heroesUrl}/${id}`;
+
+    return this.http.delete<Hero>(url, this.httpOptions).pipe(
+      tap(_ => this.log(`deleted hero id=${id}`)),
+      catchError(this.handleError<Hero>('deleteHero'))
+    )
   }
 
   /**
